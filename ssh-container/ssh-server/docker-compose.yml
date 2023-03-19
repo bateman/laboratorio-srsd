@@ -1,0 +1,9 @@
+version: "2"
+services:
+  ssh-server:
+    hostname: 'ssh-server'
+    build: .
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "2222:22"
