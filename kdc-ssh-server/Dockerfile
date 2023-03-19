@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM arm64v8/debian 
 
 EXPOSE 749 88 22
 
@@ -8,6 +8,9 @@ RUN apt-get -qq install locales krb5-kdc krb5-admin-server
 RUN apt-get -qq install openssh-server
 RUN apt-get -qq install vim 
 RUN apt-get -qq clean
+
+RUN mkdir /var/run/sshd
+RUN mkdir /var/empty
 
 ENV REALM ${REALM:-EXAMPLE.COM}
 ENV SUPPORTED_ENCRYPTION_TYPES ${SUPPORTED_ENCRYPTION_TYPES:-aes256-cts-hmac-sha1-96:normal}
