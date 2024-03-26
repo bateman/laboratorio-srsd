@@ -1,5 +1,5 @@
-# Kerberos Containers
+# Kerberos 
 
-Containers with pre-installed dependencies for an easy local testing environment with Kerberos and SSH.
+Container Docker con dipendenze pre-installate per facilitare il test in locale di server Kerberos and client SSH.
 
-See guide here: https://www.confluent.io/blog/containerized-testing-with-kerberos-and-ssh/
+Basato sulla guida: https://www.confluent.io/blog/containerized-testing-with-kerberos-and-ssh/
