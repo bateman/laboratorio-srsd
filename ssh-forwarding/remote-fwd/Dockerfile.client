@@ -1,0 +1,27 @@
+# syntax=docker/dockerfile:1.4
+FROM alpine:latest
+
+# Install packages required for SSH and Python
+RUN apk add --no-cache openssh-client python3 curl
+
+
+# Create an SSH directory and copy locally available public keys
+RUN mkdir -p /root/.ssh && \
+    chmod 700 /root/.ssh 
+
+# Start Python HTTP server in the background
+# Prepare the entrypoint that starts the daemons:
+COPY --chmod=755 <<'EOF' /entrypoint.sh
+#!/bin/sh
+set -euo pipefail
+
+cp /tmp/ssh/* /root/.ssh
+chmod 600 /root/.ssh/*
+
+python3 -m http.server --bind 127.0.0.1 80 &
+
+sleep infinity
+EOF
+
+# Run it:
+CMD ["/entrypoint.sh"]
