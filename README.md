@@ -2,7 +2,7 @@
 
 Raccolta del materiale di laboratorio per l'insegnamento di Sicurezza nelle Reti e nei Sistemi Distribuiti.
 
-## Configurazioe dell'ambiente
+## Configurazione dell'ambiente
 
 ### Linux
 
