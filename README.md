@@ -23,6 +23,6 @@ Raccolta del materiale di laboratorio per l'insegnamento di Sicurezza nelle Reti
 
 ## Moduli
 
-- [User authentication](user-authentication/README.md)
-- [Server SSH](ssh-server/README.md)
+- [User authentication (Kerberos)](user-authentication/README.md)
+- [SSH forwarding (tunneling)](ssh-forwarding/README.md)
 
