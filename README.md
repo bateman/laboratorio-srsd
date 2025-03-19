@@ -8,11 +8,11 @@ Raccolta del materiale di laboratorio per l'insegnamento di Sicurezza nelle Reti
 
 * [Installare Docker su Ubuntu 22.04](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-22-04)
 
-### Windows 11
+### Windows 10/11
 
 * [Installare WSL](https://learn.microsoft.com/en-us/windows/wsl/install) 
-* Installare Ubuntu 22.04 dal Windows Store
-* [Installare Docker per WSL](https://medium.com/geekculture/run-docker-in-windows-10-11-wsl-without-docker-desktop-a2a7eb90556d)
+* [Installare Ubuntu 22.04](https://documentation.ubuntu.com/wsl/en/latest/howto/install-ubuntu-wsl2/)
+* [Installare Docker su Ubuntu 22.04](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-22-04)
 
 ### macOS
 
