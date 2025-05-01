@@ -1,0 +1,8 @@
+# macOS system files
+.DS_Store
+
+# .env files
+.env
+
+# StrongSwan certificates
+config/cacerts/

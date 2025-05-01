@@ -1,0 +1,19 @@
+services:  
+  vpn-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vpn-client
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      vpn-network:
+        ipv4_address: 172.20.0.3
+    environment:
+      - SERVER_IP=${SERVER_IP} 
+    restart: unless-stopped
+
+networks:
+  vpn-network:
+    external: true

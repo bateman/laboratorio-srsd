@@ -1,0 +1,9 @@
+# StrongSwan certificates and private keys
+.server/config/cacerts/
+.server/config/certs/
+.server/config/private/
+.client/config/cacerts/
+.client/.env
+
+# macOS system files
+.DS_Store
