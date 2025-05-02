@@ -118,10 +118,11 @@ fi
 echo "Restarting the container"
 docker restart vpn-client
 
-echo "Container logs:"
-docker logs vpn-client
+# Commented out - for debug purposes only
+#echo "Container logs:"
+#docker logs vpn-client
 
-echo "Verifying container state:"
-docker exec vpn-client ls -la /scripts/
-docker exec vpn-client ls -la /etc/ | grep ipsec
-docker exec vpn-client ls -la /etc/ipsec.d/cacerts | grep ca-cert.pem
+#echo "Verifying container state:"
+#docker exec vpn-client ls -la /scripts/
+#docker exec vpn-client ls -la /etc/ | grep ipsec
+#docker exec vpn-client ls -la /etc/ipsec.d/cacerts | grep ca-cert.pem
