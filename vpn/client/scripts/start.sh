@@ -4,14 +4,12 @@ set -e
 # Function to setup client connection
 setup_client() {
     # Update ipsec.conf with actual server IP
-    #sed -i '' "s/@SERVER_IP@/$SERVER_IP/g" /etc/ipsec.conf
     sed -i "s/@SERVER_IP@/$SERVER_IP/g" /etc/ipsec.conf
 
     # Check if CA certificate exists
     if [ ! -f "/etc/ipsec.d/cacerts/ca-cert.pem" ]; then
-        echo "CA certificate not found. Please copy it manually to /etc/ipsec.d/cacerts/ca-cert.pem"
-        # In real lab, we would copy the CA cert from the server, but in this demo we'll 
-        # assume it's already mounted in the volume
+        echo "CA certificate not found. Creating an empty placeholder."
+        touch /etc/ipsec.d/cacerts/ca-cert.pem
     fi
 }
 
