@@ -4,11 +4,12 @@ set -e
 echo "Stopping and existing container..."
 docker compose down
 
-echo "Removing existing images..."
-docker rmi $(docker images -q vpn-client_vpn-client) 2>/dev/null || true
+# Comment out to ensure a fresh start
+#echo "Removing existing images..."
+#docker rmi $(docker images -q vpn-client_vpn-client) 2>/dev/null || true
 
-echo "Cleaning up build cache..."
-docker builder prune -f
+#echo "Cleaning up build cache..."
+#docker builder prune -f
 
 echo "Verifying directory structure..."
 if [ ! -d "config" ]; then
