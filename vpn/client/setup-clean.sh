@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Stopping and removing existing containers..."
+echo "Stopping and existing container..."
 docker compose down
 
 echo "Removing existing images..."
