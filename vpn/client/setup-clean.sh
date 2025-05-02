@@ -25,8 +25,6 @@ fi
 if [ ! -f "config/ipsec.conf" ]; then
   echo "Creating sample ipsec.conf..."
   cat > config/ipsec.conf << EOF
-# ***** ipsec.d ****
-
 config setup
     charondebug="ike 1, knl 1, cfg 0"
 
