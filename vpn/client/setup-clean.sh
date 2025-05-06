@@ -12,7 +12,7 @@ docker compose down
 #docker builder prune -f
 
 echo "Verifying directory structure..."
-if [ ! -d "config" ]; then
+if [ ! -d "config/cacerts" ]; then
   echo "Creating config directory..."
   mkdir -p config/cacerts
 fi
@@ -59,10 +59,6 @@ set -e
 
 # Function to setup client connection
 setup_client() {
-    # Get the SERVER address
-    SERVER_IP=\$(docker exec vpn-server hostname -I | awk '{print \$1}')
-    echo "SERVER_IP=\$SERVER_IP" > .env
-    
     if [ -z "\$SERVER_IP" ]; then
         SERVER_IP="172.20.0.2"
         echo "Could not resolve vpn-server, using default IP: \$SERVER_IP"
@@ -106,15 +102,20 @@ EOF
   chmod +x scripts/start.sh
 fi
 
-echo "Building and starting containers..."
-docker compose build
-docker compose up -d
+# Get the SERVER address
+SERVER_IP=$(docker exec vpn-server hostname -I | awk '{print $1}')
+echo "SERVER_IP=$SERVER_IP" > .env
 
 echo "Copying CA certificates to vpn-client config directory"
 docker exec vpn-server cat /etc/ipsec.d/cacerts/ca-cert.pem > config/cacerts/ca-cert.pem 2>/dev/null || echo "CA cert not yet available, will retry"
-if [ -f config/cacerts/ca-cert.pem ]; then
-    docker cp config/cacerts/ca-cert.pem vpn-client:/etc/ipsec.d/cacerts/
-fi
+
+#if [ -f "config/cacerts/ca-cert.pem" ]; then
+#    docker cp config/cacerts/ca-cert.pem vpn-client:/etc/ipsec.d/cacerts/
+#fi
+
+echo "Building and starting containers..."
+docker compose build
+docker compose up -d
 
 echo "Restarting the container"
 docker restart vpn-client
