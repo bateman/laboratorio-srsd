@@ -14,7 +14,7 @@ print_green() {
 }
 
 echo "Stopping and existing container..."
-docker compose down 2>/dev/null
+docker compose down 2>/dev/null || true
 
 # Comment out to ensure a fresh start
 #echo "Removing existing images..."
