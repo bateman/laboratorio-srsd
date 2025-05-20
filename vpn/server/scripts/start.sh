@@ -15,7 +15,7 @@ setup_certificates() {
     SERVER_IP=$(hostname -I | awk '{print $1}')
     
     # Update ipsec.conf with actual server IP
-    sed -i '' "s/@SERVER_IP@/$SERVER_IP/g" /etc/ipsec.conf
+    sed -i "s/@SERVER_IP@/$SERVER_IP/g" /etc/ipsec.conf
     
     # Generate CA key
     pki --gen --type rsa --size 4096 --outform pem > /root/pki/private/ca-key.pem

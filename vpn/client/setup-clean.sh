@@ -1,8 +1,20 @@
 #!/bin/bash
 set -e
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+print_red() {
+  echo -e "${RED}${1}${NC}"
+}
+
+print_green() {
+  echo -e "${GREEN}${1}${NC}"
+}
+
 echo "Stopping and existing container..."
-docker compose down
+docker compose down 2>/dev/null
 
 # Comment out to ensure a fresh start
 #echo "Removing existing images..."
@@ -12,7 +24,7 @@ docker compose down
 #docker builder prune -f
 
 echo "Verifying directory structure..."
-if [ ! -d "config" ]; then
+if [ ! -d "config/cacerts" ]; then
   echo "Creating config directory..."
   mkdir -p config/cacerts
 fi
@@ -59,10 +71,6 @@ set -e
 
 # Function to setup client connection
 setup_client() {
-    # Get the SERVER address
-    SERVER_IP=\$(docker exec vpn-server hostname -I | awk '{print \$1}')
-    echo "SERVER_IP=\$SERVER_IP" > .env
-    
     if [ -z "\$SERVER_IP" ]; then
         SERVER_IP="172.20.0.2"
         echo "Could not resolve vpn-server, using default IP: \$SERVER_IP"
@@ -106,19 +114,31 @@ EOF
   chmod +x scripts/start.sh
 fi
 
+# Get the SERVER address
+echo "Fetching the vpn-server IP address"
+SERVER_IP=$(docker exec vpn-server hostname -I 2>/dev/null| awk '{print $1}')
+if [ -z "$SERVER_IP" ]; then
+  print_red "Please start the server first"
+  exit 1
+fi
+echo "SERVER_IP=$SERVER_IP" > .env
+
+echo "Copying CA certificates to vpn-client config directory"
+docker exec vpn-server cat /etc/ipsec.d/cacerts/ca-cert.pem > config/cacerts/ca-cert.pem 2>/dev/null || print_red "CA cert not yet available, please retry"
+
+if [ ! -f "config/cacerts/ca-cert.pem" ]; then
+  print_red "No ca-cert file, something went wrong..."
+  exit 1
+fi
+
 echo "Building and starting containers..."
 docker compose build
 docker compose up -d
 
-echo "Copying CA certificates to vpn-client config directory"
-docker exec vpn-server cat /etc/ipsec.d/cacerts/ca-cert.pem > config/cacerts/ca-cert.pem 2>/dev/null || echo "CA cert not yet available, will retry"
-if [ -f config/cacerts/ca-cert.pem ]; then
-    docker cp config/cacerts/ca-cert.pem vpn-client:/etc/ipsec.d/cacerts/
-fi
-
 echo "Restarting the container"
 docker restart vpn-client
 
+print_green "All done! Now run \"docker exec -it vpn-client /bin/bash\""
 # Commented out - for debug purposes only
 #echo "Container logs:"
 #docker logs vpn-client
