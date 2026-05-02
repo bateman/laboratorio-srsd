@@ -46,24 +46,63 @@ setup_certificates() {
 
 # Function to configure firewall and IPtables
 setup_firewall() {
-    # Get the default interface
     DEFAULT_INTERFACE=$(ip route show default | grep -Po '(?<=dev )\w+')
-    
-    # Enable IP forwarding
+
+    # 1. Pulisci stato precedente (idempotenza, utile se la funzione viene rieseguita)
+    iptables -F
+    iptables -t nat -F
+    iptables -t mangle -F
+
+    # 2. Durante il setup teniamo policy ACCEPT, così non ci auto-blocchiamo
+    #    mentre stiamo aggiungendo le ACCEPT rules. La chiusura è in fondo.
+    iptables -P INPUT   ACCEPT
+    iptables -P FORWARD ACCEPT
+    iptables -P OUTPUT  ACCEPT
+
+    # 3. IP forwarding + NAT (invariato rispetto allo script originale)
     echo 1 > /proc/sys/net/ipv4/ip_forward
-    
-    # Set up NAT for VPN clients
-    iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o $DEFAULT_INTERFACE -m policy --pol ipsec --dir out -j ACCEPT
-    iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o $DEFAULT_INTERFACE -j MASQUERADE
-    
-    # Set up mangle rules for TCP MSS clamping
-    iptables -t mangle -A FORWARD --match policy --pol ipsec --dir in -s 10.10.10.0/24 -o $DEFAULT_INTERFACE -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1361:1536 -j TCPMSS --set-mss 1360
-    
-    # Allow IPsec traffic
-    iptables -A INPUT -p udp --dport 500 -j ACCEPT
+    iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o $DEFAULT_INTERFACE \
+        -m policy --pol ipsec --dir out -j ACCEPT
+    iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o $DEFAULT_INTERFACE \
+        -j MASQUERADE
+
+    # 4. MSS clamping 
+    iptables -t mangle -A FORWARD --match policy --pol ipsec --dir in \
+        -s 10.10.10.0/24 -o $DEFAULT_INTERFACE -p tcp -m tcp \
+        --tcp-flags SYN,RST SYN -m tcpmss --mss 1361:1536 \
+        -j TCPMSS --set-mss 1360
+
+    # 5. INPUT: ACCEPT esplicite (devono precedere il DROP)
+    # 5a. loopback sempre
+    iptables -A INPUT -i lo -j ACCEPT
+    # 5b. ritorno di connessioni già aperte dal server (DNS, apt-get, ecc.)
+    iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    iptables -A INPUT -m conntrack --ctstate INVALID -j DROP
+    # 5c. ICMP echo-request rate-limitato (utile per ping di debug; togliere se non vuoi)
+    iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 4/sec -j ACCEPT
+    # 5d. IKE e NAT-Traversal
+    iptables -A INPUT -p udp --dport 500  -j ACCEPT
     iptables -A INPUT -p udp --dport 4500 -j ACCEPT
-    iptables -A FORWARD --match policy --pol ipsec --dir in --proto esp -s 10.10.10.0/24 -j ACCEPT
+    # 5e. ESP "nativo" (protocollo 50), per il caso senza NAT-T
+    iptables -A INPUT -p esp -j ACCEPT
+    # 5f. SSH per amministrare il container (rimuovi se accedi solo via `docker exec`)
+    iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+
+    # 6. FORWARD: ACCEPT esplicite
+    # 6a. ritorno di sessioni già aperte da client VPN verso Internet
+    iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    # 6b. traffico VPN dopo decifratura ESP, in entrambe le direzioni (dallo script originale)
+    iptables -A FORWARD --match policy --pol ipsec --dir in  --proto esp -s 10.10.10.0/24 -j ACCEPT
     iptables -A FORWARD --match policy --pol ipsec --dir out --proto esp -d 10.10.10.0/24 -j ACCEPT
+
+    # 7. Logging dei pacchetti che STANNO PER essere droppati (limit per evitare flooding)
+    iptables -A INPUT   -m limit --limit 5/min -j LOG --log-prefix "fw-DROP-IN: "   --log-level 7
+    iptables -A FORWARD -m limit --limit 5/min -j LOG --log-prefix "fw-DROP-FWD: "  --log-level 7
+
+    # 8. CHIUDI: ora che le eccezioni sono in place, default policy DROP
+    iptables -P INPUT   DROP
+    iptables -P FORWARD DROP
+    iptables -P OUTPUT  ACCEPT     # il server VPN deve poter iniziare sessioni (DNS, NTP, log, …)
 }
 
 # Main execution
