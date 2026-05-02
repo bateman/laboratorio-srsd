@@ -102,7 +102,7 @@ setup_firewall() {
     # 8. CHIUDI: ora che le eccezioni sono in place, default policy DROP
     iptables -P INPUT   DROP
     iptables -P FORWARD DROP
-    iptables -P OUTPUT  ACCEPT     # il server VPN deve poter iniziare sessioni (DNS, NTP, log, …)
+    iptables -P OUTPUT  ACCEPT     # il server VPN deve poter iniziare sessioni (DNS, NTP, log, ...)
 }
 
 # Main execution
