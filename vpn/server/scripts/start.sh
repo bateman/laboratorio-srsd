@@ -33,7 +33,7 @@ setup_certificates() {
         --cacert /root/pki/cacerts/ca-cert.pem \
         --cakey /root/pki/private/ca-key.pem \
         --dn "CN=$SERVER_IP" --san @$SERVER_IP --san $SERVER_IP \
-        --flag serverAuth --flag ikeIntermediate --outform pem \
+        --flag serverAuth --flag ipsecIKE --outform pem \
         > /root/pki/certs/server-cert.pem
     
     # Copy certificates to StrongSwan directory
